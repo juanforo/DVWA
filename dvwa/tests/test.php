@@ -7,7 +7,7 @@ class MyProceduralTest extends PHPunit_Framework_Testcase {
          */
 
         public function testAddition(){
-                include('function.php'); // must include if tests are for non OOP code
+                include('dvwa/function.php'); // must include if tests are for non OOP code
                 $result = my_addition(1,1);
                 $this->assertEquals(2, $result);
         }
