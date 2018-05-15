@@ -20,7 +20,7 @@ with (field) {
  }
 }
 
-function validateGuestbookForm(thisform) {
+function validate_form(thisform) {
 with (thisform) {
 
   // Guestbook form
@@ -33,6 +33,3 @@ with (thisform) {
   }
 }
 
-function confirmClearGuestbook() {
-	return confirm("Are you sure you want to clear the guestbook?");
-}
