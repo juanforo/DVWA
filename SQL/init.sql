@@ -5,4 +5,4 @@ INSERT INTO users VALUES ('3','Hack','Me','1337',MD5('charley'),'/hackable/users
 INSERT INTO users VALUES ('4','Pablo','Picasso','pablo',MD5('letmein'),'/hackable/users/pablo.jpg', NOW(), '0');
 INSERT INTO users VALUES ('5','Bob','Smith','smithy',MD5('password'),'/hackable/users/smithy.jpg', NOW(), '0');
 CREATE TABLE guestbook (comment_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT, comment varchar(300), name varchar(100), PRIMARY KEY (comment_id));
-INSERT INTO guestbook VALUES ('1','This is a test comment.','test');|
+INSERT INTO guestbook VALUES ('1','This is a test comment.','test');
