@@ -1,0 +1,57 @@
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+JSONArray attachments = new JSONArray();
+JSONObject attachment = new JSONObject();
+attachment.put('fallback', 'Required plain-text summary of the attachment.');
+attachment.put('color', '#36a64f');
+attachment.put('pretext', 'Build successful');
+attachment.put('author_name', 'OWASP ZAP');
+attachment.put('title', 'ZAP Report');
+attachment.put('title_link', 'http://localhost:8080/job/zap-testing/ZAP_20Report/');
+attachment.put('text', 'This is the report of the vulnerabilities found in DVWA app.');
+attachment.put('footer', 'Slack API');
+attachment.put('footer_icon', 'https,//platform.slack-edge.com/img/default_application_icon.png');
+attachments.add(attachment);
+
+pipeline {
+    agent {
+        label "master"
+    }
+    stages {
+      stage ('Start') {
+        steps {
+            slackSend (color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+            }
+        }
+      stage ('Security Test') {
+        steps {
+          sh 'if [ `docker ps -q -a -f name=owasp` ]; then docker rm -f owasp;fi'
+          sh 'docker run --network=dvwa-pipeline_default --link dvwa-pipeline_app_1:app -p 8090:8090 -e ZAP_PORT=8090 --name owasp -d juanforo/owasp-test zap.sh -daemon -port 8090 -host 0.0.0.0 -config api.disablekey=true'
+          sh 'rm -rf results && mkdir results'
+          // sh "if curl -s -o /dev/null -w '%{http_code}' http://app/login.php -eq 200 ; then echo 'It works'; exit 1; fi"
+          // Active scan, a bit more permissive and customizable
+          sh "docker exec -d owasp sh exec.sh"
+          sh "sleep 150 && docker cp owasp:/zap/log_file.txt ${pwd}/workspace/zap-testing/log_file.txt"
+          sh "docker cp owasp:/zap/wrk/ ${pwd}/workspace/zap-testing"
+          archiveArtifacts artifacts: 'log_file.txt'
+          archiveArtifacts artifacts: 'wrk/testreport.html'
+          publishHTML target: [
+              alwaysLinkToLastBuild: true,
+              reportDir : 'wrk/',
+              reportFiles : 'testreport.html',
+              reportName : 'ZAP Report'
+            ]
+          }
+        }
+      }
+
+post {
+    success {
+      slackSend (color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})", attachments: attachments.toString())
+    }
+
+    failure {
+      slackSend (color: '#FF0000', message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    }
+  }
+}
