@@ -66,18 +66,21 @@ COPY zap* /zap/
 COPY webswing.config /zap/webswing/
 COPY policies /home/zap/.ZAP/policies/
 COPY .xinitrc /home/zap/
+COPY exec.sh /zap/
 
 #Copy doesn't respect USER directives so we need to chown and to do that we need to be root
 USER root
 
 RUN chown zap:zap /zap/zap-x.sh && \
 	chown zap:zap /zap/zap-baseline.py && \
+	chmod +x -R /zap/* && \
 	chown zap:zap /zap/zap-webswing.sh && \
 	chown zap:zap /zap/webswing/webswing.config && \
 	chown zap:zap -R /home/zap/.ZAP/ && \
 	chown zap:zap /home/zap/.xinitrc && \
 	chmod a+x /home/zap/.xinitrc && \
-        chmod zap:zap /zap/wrk
+	mkdir /zap/wrk && \
+        chown zap:zap /zap/wrk
 
 #Change back to zap at the end
 USER zap
